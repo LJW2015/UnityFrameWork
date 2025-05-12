@@ -20,18 +20,18 @@
 public static class EventIds
 {
     // 游戏相关事件
-    public const string GameStart = "GameStart";    // 游戏开始
-    public const string GamePause = "GamePause";    // 游戏暂停
-    public const string GameResume = "GameResume";  // 游戏恢复
-    public const string GameOver = "GameOver";      // 游戏结束
+    public readonly static string GameStart = "GameStart";    // 游戏开始
+    public readonly static string GamePause = "GamePause";    // 游戏暂停
+    public readonly static string GameResume = "GameResume";  // 游戏恢复
+    public readonly static string GameOver = "GameOver";      // 游戏结束
 
     // UI相关事件
-    public const string UIOpen = "UIOpen";          // UI打开
-    public const string UIClose = "UIClose";        // UI关闭
-    public const string UIUpdate = "UIUpdate";      // UI更新
+    public readonly static string UIOpen = "UIOpen";          // UI打开
+    public readonly static string UIClose = "UIClose";        // UI关闭
+    public readonly static string UIUpdate = "UIUpdate";      // UI更新
 
     // 测试事件
-    public const string TestEvent = "TestEvent";    // 测试事件
+    public readonly static string TestEvent = "TestEvent";    // 测试事件
 
     // 可以按模块继续添加更多事件ID...
 }

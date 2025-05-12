@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 /// <summary>
 /// UI管理器，负责管理所有UI界面的生命周期
@@ -12,8 +13,8 @@ using System.Collections.Generic;
 /// 
 /// 使用方法：
 /// 1. 初始化：UIManager.Init();
-/// 2. 打开UI：UIManager.OpenUI("MainUI");
-/// 3. 关闭UI：UIManager.CloseUI("MainUI");
+/// 2. 打开UI：UIManager.OpenUI(UIIds.Main.MainMenu);
+/// 3. 关闭UI：UIManager.CloseUI(UIIds.Main.MainMenu);
 /// </summary>
 public static class UIManager
 {
@@ -26,6 +27,11 @@ public static class UIManager
     /// UI根节点
     /// </summary>
     private static Transform _uiRoot;
+
+    /// <summary>
+    /// UI层级节点字典
+    /// </summary>
+    private static Dictionary<UILayer, Transform> _layerDict;
 
     /// <summary>
     /// 是否已初始化
@@ -45,6 +51,7 @@ public static class UIManager
 
         // 初始化UI字典
         _uiDict = new Dictionary<string, GameObject>();
+        _layerDict = new Dictionary<UILayer, Transform>();
 
         // 初始化UI根节点
         GameObject root = GameObject.Find("UIRoot");
@@ -55,16 +62,33 @@ public static class UIManager
         }
         _uiRoot = root.transform;
 
+        // 初始化所有层级节点
+        InitializeLayers();
+
         _isInitialized = true;
         Debug.Log("UIManager 初始化完成");
     }
 
     /// <summary>
+    /// 初始化所有UI层级节点
+    /// </summary>
+    private static void InitializeLayers()
+    {
+        // 创建所有层级节点
+        foreach (UILayer layer in Enum.GetValues(typeof(UILayer)))
+        {
+            GameObject layerObj = new GameObject(layer.ToString());
+            layerObj.transform.SetParent(_uiRoot, false);
+            _layerDict[layer] = layerObj.transform;
+        }
+    }
+
+    /// <summary>
     /// 打开UI界面
     /// </summary>
-    /// <param name="uiName">UI名称</param>
+    /// <param name="uiData">UI数据</param>
     /// <param name="param">打开参数</param>
-    public static void OpenUI(string uiName, object param = null)
+    public static void OpenUI(UIData uiData, object param = null)
     {
         if (!_isInitialized)
         {
@@ -73,31 +97,33 @@ public static class UIManager
         }
 
         // 如果UI已经打开，直接返回
-        if (_uiDict.ContainsKey(uiName))
+        if (_uiDict.ContainsKey(uiData.Id))
         {
-            Debug.LogWarning($"UI {uiName} 已经打开");
+            Debug.LogWarning($"UI {uiData.Id} 已经打开");
             return;
         }
 
-        // TODO: 加载UI预制体
-        // GameObject uiObj = Resources.Load<GameObject>($"UI/{uiName}");
-        // if (uiObj == null)
-        // {
-        //     Debug.LogError($"UI {uiName} 预制体不存在");
-        //     return;
-        // }
+        // 获取UI层级
+        Transform parent = _layerDict[uiData.Layer];
+
+        // 加载UI预制体
+        GameObject uiObj = Resources.Load<GameObject>(uiData.PrefabPath);
+        if (uiObj == null)
+        {
+            Debug.LogError($"UI {uiData.Id} 预制体不存在: {uiData.PrefabPath}");
+            return;
+        }
 
         // 实例化UI
-        // GameObject ui = GameObject.Instantiate(uiObj, _uiRoot);
-        // ui.name = uiName;
-        // _uiDict[uiName] = ui;
+        
+
     }
 
     /// <summary>
     /// 关闭UI界面
     /// </summary>
-    /// <param name="uiName">UI名称</param>
-    public static void CloseUI(string uiName)
+    /// <param name="uiData">UI数据</param>
+    public static void CloseUI(UIData uiData)
     {
         if (!_isInitialized)
         {
@@ -105,24 +131,24 @@ public static class UIManager
             return;
         }
 
-        if (!_uiDict.ContainsKey(uiName))
+        if (!_uiDict.ContainsKey(uiData.Id))
         {
-            Debug.LogWarning($"UI {uiName} 未打开");
+            Debug.LogWarning($"UI {uiData.Id} 未打开");
             return;
         }
 
         // 销毁UI对象
-        GameObject ui = _uiDict[uiName];
+        GameObject ui = _uiDict[uiData.Id];
         GameObject.Destroy(ui);
-        _uiDict.Remove(uiName);
+        _uiDict.Remove(uiData.Id);
     }
 
     /// <summary>
     /// 获取UI对象
     /// </summary>
-    /// <param name="uiName">UI名称</param>
+    /// <param name="uiData">UI数据</param>
     /// <returns>UI对象</returns>
-    public static GameObject GetUI(string uiName)
+    public static GameObject GetUI(UIData uiData)
     {
         if (!_isInitialized)
         {
@@ -130,7 +156,7 @@ public static class UIManager
             return null;
         }
 
-        if (_uiDict.TryGetValue(uiName, out GameObject ui))
+        if (_uiDict.TryGetValue(uiData.Id, out GameObject ui))
         {
             return ui;
         }
@@ -140,9 +166,9 @@ public static class UIManager
     /// <summary>
     /// 判断UI是否打开
     /// </summary>
-    /// <param name="uiName">UI名称</param>
+    /// <param name="uiData">UI数据</param>
     /// <returns>是否打开</returns>
-    public static bool IsUIOpen(string uiName)
+    public static bool IsUIOpen(UIData uiData)
     {
         if (!_isInitialized)
         {
@@ -150,7 +176,7 @@ public static class UIManager
             return false;
         }
 
-        return _uiDict.ContainsKey(uiName);
+        return _uiDict.ContainsKey(uiData.Id);
     }
 
     /// <summary>
