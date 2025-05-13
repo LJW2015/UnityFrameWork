@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
-
-public class EventSystermTest : MonoBehaviour
+using GameFramework;
+public class TestLogic : MonoBehaviour
 {
     private void Start()
     {

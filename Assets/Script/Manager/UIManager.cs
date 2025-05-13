@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
+using UnityEngine.UI;
 
 namespace GameFramework
 {
@@ -57,12 +58,7 @@ namespace GameFramework
             _layerDict = new Dictionary<UILayer, Transform>();
 
             // 初始化UI根节点
-            GameObject root = GameObject.Find("UIRoot");
-            if (root == null)
-            {
-                root = new GameObject("UIRoot");
-                GameObject.DontDestroyOnLoad(root);
-            }
+            GameObject root = GameObject.Find("UICanvas");
             _uiRoot = root.transform;
 
             // 初始化所有层级节点
@@ -82,6 +78,14 @@ namespace GameFramework
             {
                 GameObject layerObj = new GameObject(layer.ToString());
                 layerObj.transform.SetParent(_uiRoot, false);
+                
+                // 设置RectTransform
+                RectTransform rectTransform = layerObj.AddComponent<RectTransform>();
+                rectTransform.anchorMin = Vector2.zero;
+                rectTransform.anchorMax = Vector2.one;
+                rectTransform.offsetMin = Vector2.zero;
+                rectTransform.offsetMax = Vector2.zero;
+                
                 _layerDict[layer] = layerObj.transform;
             }
         }
@@ -140,14 +144,9 @@ namespace GameFramework
         /// <returns>预制体对象</returns>
         private static async Task<GameObject> LoadUIPrefabAsync(string prefabPath)
         {
-            // 确保路径以Resources/开头
-            if (!prefabPath.StartsWith("Resources/"))
-            {
-                prefabPath = "Resources/Prefab/" + prefabPath;
-            }
-
             // 创建异步加载请求
-            ResourceRequest request = Resources.LoadAsync<GameObject>(prefabPath);
+            Debug.Log("Prefab/" + prefabPath);
+            ResourceRequest request = Resources.LoadAsync<GameObject>("Prefab/" + prefabPath);
             
             // 等待加载完成
             while (!request.isDone)

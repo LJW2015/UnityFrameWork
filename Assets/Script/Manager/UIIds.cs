@@ -25,6 +25,6 @@ public static class UIIds
     {
         Id = "UIMain",
         Layer = UILayer.Main,
-        PrefabPath = "UI/Main/MainPanel"
+        PrefabPath = "UI/UIMain"
     };
 }
