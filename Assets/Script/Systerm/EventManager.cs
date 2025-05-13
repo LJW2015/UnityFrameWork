@@ -22,7 +22,7 @@ using System.Collections.Generic;
 /// 4. 回调方法参数统一为object，使用时需要类型转换
 /// 5. 派发事件时注意参数类型匹配
 /// </summary>
-public static class EventSysterm
+public static class EventManager
 {
     /// <summary>
     /// 事件监听者结构，包含目标对象和回调方法
