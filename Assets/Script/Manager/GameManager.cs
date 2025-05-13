@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using GameFramework;
 
+/// <summary>
+/// 游戏管理器，负责管理游戏生命周期
+/// </summary>
 public class GameManager : MonoBehaviour
 {
     void Awake()
@@ -11,6 +14,6 @@ public class GameManager : MonoBehaviour
     }
     void Start()
     {
-        UIManager.OpenUI(UIIds.UIMain.Id);
+        UIManager.OpenUI("UIMain");
     }
 }

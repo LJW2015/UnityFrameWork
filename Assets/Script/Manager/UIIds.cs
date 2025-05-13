@@ -1,17 +1,4 @@
-public class UILoadConfig
-{
-    public string Id;  // UI唯一标识
-    public UILayer Layer; // UI层级
-    public string PrefabPath; // UI预制体路径
-}
-
-public enum UILayer{
-    Background,
-    Main,
-    Popup,
-    Tips,
-    Loading,
-}
+using System.Collections.Generic;
 
 /// <summary>
 /// UI唯一标识管理类，用于统一管理所有UI的唯一标识
@@ -19,12 +6,20 @@ public enum UILayer{
 public static class UIIds
 {
     /// <summary>
-    /// 主界面
+    /// UI预制体路径字典
     /// </summary>
-    public readonly static UILoadConfig UIMain = new()
+    private static readonly Dictionary<string, string> _uiPathDict = new()
     {
-        Id = "UIMain",
-        Layer = UILayer.Main,
-        PrefabPath = "UI/UIMain"
+        { "UIMain", "Prefab/UI/UIMain" }
     };
-}
+
+    /// <summary>
+    /// 获取UI预制体路径
+    /// </summary>
+    /// <param name="uiId">UI唯一标识</param>
+    /// <returns>预制体路径</returns>
+    public static string GetUIPath(string uiId)
+    {
+        return _uiPathDict.TryGetValue(uiId, out string path) ? path : null;
+    }
+} 

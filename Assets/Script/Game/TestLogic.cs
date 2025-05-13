@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using GameFramework;
-public class TestLogic : MonoBehaviour
+public class TestLogic : UIBaseView
 {
     private void Start()
     {

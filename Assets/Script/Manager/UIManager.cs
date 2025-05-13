@@ -91,6 +91,16 @@ namespace GameFramework
         }
 
         /// <summary>
+        /// 从UIIds中获取UI配置
+        /// </summary>
+        /// <param name="uiId">UI唯一标识</param>
+        /// <returns>预制体路径</returns>
+        private static string GetUIConfig(string uiId)
+        {
+            return UIIds.GetUIPath(uiId);
+        }
+
+        /// <summary>
         /// 打开UI界面
         /// </summary>
         /// <param name="uiId">UI唯一标识</param>
@@ -111,26 +121,40 @@ namespace GameFramework
             }
 
             // 从UIIds中获取UI配置
-            var uiConfig = GetUIConfig(uiId);
-            if (uiConfig == null)
+            string prefabPath = GetUIConfig(uiId);
+            if (string.IsNullOrEmpty(prefabPath))
             {
                 Debug.LogError($"UI {uiId} 配置不存在");
                 return;
             }
 
-            // 获取UI层级
-            var parent = _layerDict[uiConfig.Layer];
-
-            // 异步加载UI预制体
-            var uiObj = await LoadUIPrefabAsync(uiConfig.PrefabPath);
-            if (uiObj == null)
+            // 使用UIViewFactory异步创建UI实例
+            var ui = await UIViewFactory.CreateUIViewAsync(uiId, prefabPath);
+            if (ui == null)
             {
-                Debug.LogError($"UI {uiId} 预制体不存在: {uiConfig.PrefabPath}");
+                Debug.LogError($"UI {uiId} 创建失败");
                 return;
             }
 
-            // 实例化UI
-            var ui = GameObject.Instantiate(uiObj, parent);
+            // 获取UI组件并设置层级
+            var baseComponent = ui.GetComponent<UIBaseComponent>();
+            var baseView = ui.GetComponent<UIBaseView>();
+            if (baseComponent != null)
+            {
+                var parent = _layerDict[baseComponent.UILayer];
+                ui.transform.SetParent(parent, false);
+                
+                // 调用初始化方法
+                baseView.OnInit();
+                // 调用显示方法
+                baseView.OnShow();
+            }
+            else
+            {
+                Debug.LogError($"UI {uiId} 未找到UIBaseComponent组件");
+                return;
+            }
+
             ui.name = uiId;
 
             // 添加到字典
@@ -175,8 +199,17 @@ namespace GameFramework
                 return;
             }
 
-            // 销毁UI对象
+            // 获取UI对象
             GameObject ui = _uiDict[uiId];
+            
+            // 调用关闭方法
+            var baseView = ui.GetComponent<UIBaseView>();
+            if (baseView != null)
+            {
+                baseView.OnClose();
+            }
+
+            // 销毁UI对象
             GameObject.Destroy(ui);
             _uiDict.Remove(uiId);
         }
@@ -236,29 +269,6 @@ namespace GameFramework
                 }
             }
             _uiDict.Clear();
-        }
-
-        /// <summary>
-        /// 从UIIds中获取UI配置
-        /// </summary>
-        /// <param name="uiId">UI唯一标识</param>
-        /// <returns>UI配置</returns>
-        private static UILoadConfig GetUIConfig(string uiId)
-        {
-            // 使用反射获取UIIds中所有静态字段
-            var fields = typeof(UIIds).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-            foreach (var field in fields)
-            {
-                if (field.FieldType == typeof(UILoadConfig))
-                {
-                    var config = (UILoadConfig)field.GetValue(null);
-                    if (config.Id == uiId)
-                    {
-                        return config;
-                    }
-                }
-            }
-            return null;
         }
     }
 }
