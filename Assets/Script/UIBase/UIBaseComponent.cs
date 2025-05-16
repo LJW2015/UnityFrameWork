@@ -16,8 +16,6 @@ public class UIBaseComponent : MonoBehaviour
     // UI预制体的基本信息
     [SerializeField] private string _uiName;        // UI名称
     [SerializeField] public UILayer _uiLayer;          // UI层级
-    // 组件缓存字典
-    private Dictionary<string, MonoBehaviour> _componentCache = new Dictionary<string, MonoBehaviour>();
     
     // 属性访问器
     public string UIName => _uiName;
