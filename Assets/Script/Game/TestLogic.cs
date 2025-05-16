@@ -1,41 +1,60 @@
 using System;
 using UnityEngine;
 using GameFramework;
+using UnityEngine.UI;
+using TMPro;
+using UnityEngine.EventSystems;
+
 public class TestLogic : UIBaseView
 {
-    private void Start()
+    // 测试用的UI组件引用
+    public Button testButton;
+    public Text testText;
+
+    public Button button;
+    
+    public override void OnInit()
     {
-        // 注册事件（不带对象）
-        EventManager.Regist(EventIds.TestEvent, OnTestEvent);
-        Debug.Log("注册TestEvent（不带对象）");
+        base.OnInit();
+        
+        // 获取UI组件
+        testButton = GetUIComponent<Button>("TestButton");
+        
+        testButton.onClick.AddListener(OnTestButtonClick);
 
-        // 派发事件
-        EventManager.Dispatch(EventIds.TestEvent, "Hello Event!");
-
-        // 反注册事件（不带对象）
-        EventManager.UnRegist(EventIds.TestEvent, OnTestEvent);
-        Debug.Log("反注册TestEvent（不带对象）");
-
-        // 再次派发，应该没有回调输出
-        EventManager.Dispatch(EventIds.TestEvent, "This should not be received.");
-
-        // 注册事件（带对象）
-        EventManager.Regist(EventIds.TestEvent, OnTestEvent, this);
-        Debug.Log("注册TestEvent（带对象）");
-
-        // 派发事件
-        EventManager.Dispatch(EventIds.TestEvent, "Hello Event with target!");
-
-        // 反注册事件（带对象）
-        EventManager.UnRegist(EventIds.TestEvent, OnTestEvent, this);
-        Debug.Log("反注册TestEvent（带对象）");
-
-        // 再次派发，应该没有回调输出
-        EventManager.Dispatch(EventIds.TestEvent, "This should not be received (target).");
+        testText = GetUIComponent<Text>("TestText");
+        testText.text = "test";
+        EventTrigger eventTrigger = testText.gameObject.GetComponent<EventTrigger>();
+        EventTrigger.Entry entry = new EventTrigger.Entry();
+        entry.eventID = EventTriggerType.PointerClick;
+        entry.callback.AddListener((data) => {
+            Debug.Log("testText 被点击");
+        });
+        eventTrigger.triggers.Add(entry);
+        Debug.Log("TestLogic OnInit 被调用");
     }
-
-    private void OnTestEvent(object param)
+    
+    public override void OnShow()
     {
-        Debug.Log($"收到TestEvent，参数：{param}");
+        base.OnShow();
+        Debug.Log("TestLogic OnShow 被调用");
+    }
+    
+    public override void OnHide()
+    {
+        base.OnHide();
+        Debug.Log("TestLogic OnHide 被调用");
+    }
+    
+    public override void OnClose()
+    {
+        base.OnClose();
+        Debug.Log("TestLogic OnClose 被调用");
+    }
+    
+    // 按钮点击回调
+    public void OnTestButtonClick()
+    {
+        Debug.Log("测试按钮被点击");
     }
 } 

@@ -22,11 +22,60 @@ public class UIBaseComponent : MonoBehaviour
     // 属性访问器
     public string UIName => _uiName;
     public UILayer UILayer => _uiLayer;
-    private void Awake()
-    {
-       
+
+    private UICompoentCollection _uiCompoentCollection;
+    private UIBaseView _uiBaseView;
+
+    public void Init(UIBaseView uiBaseView){
+        _uiBaseView = uiBaseView;
+        _uiCompoentCollection = GetComponent<UICompoentCollection>();
     }
-    
+
+    public void RegistComponentEvents(Component component){
+        if(component is UICompoentCollection collection){
+            foreach(var item in collection.GetIterator()){
+                RegistComponentEvents(item);
+                return;
+            }
+        }
+        if(component is Button button){
+            button.onClick.AddListener(() => {
+                OnButtonClicked(button);
+            });
+        }
+        if(component is Slider slider){
+            slider.onValueChanged.AddListener((value) => {
+                OnSliderValueChanged(slider,value);
+            });
+        }
+        if(component is InputField inputField){
+            inputField.onValueChanged.AddListener((value) => {
+                OnInputFieldValueChanged(inputField,value);
+            });
+        }
+        if(component is Toggle toggle){
+            toggle.onValueChanged.AddListener((value) => {
+                OnToggleValueChanged(toggle,value);
+            });
+        }
+    }
+
+    private void OnButtonClicked(Button button) {
+        _uiBaseView.OnButtonClicked(button);
+    }
+
+    private void OnSliderValueChanged(Slider slider, float value) {
+        _uiBaseView.OnSliderValueChanged(slider,value);
+    }
+
+    private void OnInputFieldValueChanged(InputField inputField, string value) {
+        _uiBaseView.OnInputFieldValueChanged(inputField,value);
+    }
+
+    private void OnToggleValueChanged(Toggle toggle, bool value) {
+        _uiBaseView.OnToggleValueChanged(toggle,value);
+    }
+
     // 获取组件方法
     public T GetComponent<T>(string path = "") where T : Component
     {

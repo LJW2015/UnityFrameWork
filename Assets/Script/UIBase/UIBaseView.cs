@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 // 首先创建一个UI生命周期接口
 public interface IUIView
@@ -11,14 +12,8 @@ public interface IUIView
     void OnClose();   // 销毁
 }
 
-// 创建一个UI事件接口
-public interface IUIEvent
-{
-    void RegisterEvents();    // 注册事件
-    void UnregisterEvents();  // 注销事件
-} 
 
-public class UIBaseView : MonoBehaviour, IUIView, IUIEvent
+public class UIBaseView : MonoBehaviour, IUIView
 {
     // UI组件引用
     protected UIBaseComponent _uiComponent;
@@ -26,6 +21,8 @@ public class UIBaseView : MonoBehaviour, IUIView, IUIEvent
     // UI状态
     protected bool _isInitialized = false;  // 是否初始化
     protected bool _isVisible = false;      // 是否可见
+
+    public UIBaseComponent UIComponent => _uiComponent;
     
     // 生命周期方法
     public virtual void OnInit()
@@ -41,7 +38,6 @@ public class UIBaseView : MonoBehaviour, IUIView, IUIEvent
         }
         
         _isInitialized = true;
-        RegisterEvents();
     }
 
     public virtual void OnShow()
@@ -62,23 +58,32 @@ public class UIBaseView : MonoBehaviour, IUIView, IUIEvent
 
     public virtual void OnClose()
     {
-        UnregisterEvents();
-    }
-
-    // 事件系统
-    public virtual void RegisterEvents()
-    {
-        // 子类实现具体的事件注册
-    }
-
-    public virtual void UnregisterEvents()
-    {
-        // 子类实现具体的事件注销
+       
     }
     
     // 获取UI组件方法
     protected T GetUIComponent<T>(string path = "") where T : Component
     {
         return _uiComponent?.GetComponent<T>(path);
+    }
+
+    public virtual void OnButtonClicked(Button button)
+    {
+        // 子类实现具体的事件处理
+    }
+
+    public virtual void OnSliderValueChanged(Slider slider, float value)
+    {
+        // 子类实现具体的事件处理
+    }
+
+    public virtual void OnInputFieldValueChanged(InputField inputField, string value)
+    {
+        // 子类实现具体的事件处理
+    }
+
+    public virtual void OnToggleValueChanged(Toggle toggle, bool value)
+    {
+        // 子类实现具体的事件处理
     }
 }
