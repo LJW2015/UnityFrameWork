@@ -36,7 +36,7 @@ public class UIBaseView : MonoBehaviour, IUIView
             Debug.LogError($"UIBaseComponent not found on {gameObject.name}");
             return;
         }
-        
+        _uiComponent.Init(this);
         _isInitialized = true;
     }
 
@@ -59,12 +59,6 @@ public class UIBaseView : MonoBehaviour, IUIView
     public virtual void OnClose()
     {
        
-    }
-    
-    // 获取UI组件方法
-    protected T GetUIComponent<T>(string path = "") where T : Component
-    {
-        return _uiComponent?.GetComponent<T>(path);
     }
 
     public virtual void OnButtonClicked(Button button)

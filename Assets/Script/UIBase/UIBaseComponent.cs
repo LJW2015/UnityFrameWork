@@ -17,7 +17,7 @@ public class UIBaseComponent : MonoBehaviour
     [SerializeField] private string _uiName;        // UI名称
     [SerializeField] public UILayer _uiLayer;          // UI层级
     // 组件缓存字典
-    private Dictionary<string, Component> _componentCache = new Dictionary<string, Component>();
+    private Dictionary<string, MonoBehaviour> _componentCache = new Dictionary<string, MonoBehaviour>();
     
     // 属性访问器
     public string UIName => _uiName;
@@ -29,13 +29,16 @@ public class UIBaseComponent : MonoBehaviour
     public void Init(UIBaseView uiBaseView){
         _uiBaseView = uiBaseView;
         _uiCompoentCollection = GetComponent<UICompoentCollection>();
+        if (_uiCompoentCollection != null) {
+            _uiCompoentCollection.Initialize();
+            RegistComponentEvents(_uiCompoentCollection);
+        }
     }
 
-    public void RegistComponentEvents(Component component){
+    public void RegistComponentEvents(MonoBehaviour component){
         if(component is UICompoentCollection collection){
             foreach(var item in collection.GetIterator()){
                 RegistComponentEvents(item);
-                return;
             }
         }
         if(component is Button button){
@@ -75,35 +78,16 @@ public class UIBaseComponent : MonoBehaviour
     private void OnToggleValueChanged(Toggle toggle, bool value) {
         _uiBaseView.OnToggleValueChanged(toggle,value);
     }
-
-    // 获取组件方法
-    public T GetComponent<T>(string path = "") where T : Component
-    {
-        string key = typeof(T).Name + path;
-        if (_componentCache.TryGetValue(key, out Component component))
-        {
-            return component as T;
-        }
-        
-        T targetComponent;
-        if (string.IsNullOrEmpty(path))
-        {
-            targetComponent = GetComponent<T>();
-        }
-        else
-        {
-            Transform target = transform.Find(path);
-            targetComponent = target?.GetComponent<T>();
-        }
-        
-        if (targetComponent != null)
-        {
-            _componentCache[key] = targetComponent;
-        }
-        
-        return targetComponent;
-    }
     
+    public T Get<T>(string path) where T : MonoBehaviour
+    {
+        return _uiCompoentCollection.Get<T>(path);
+    }
+
+    public bool Check(MonoBehaviour component, string path){
+        return _uiCompoentCollection.Check(component,path);
+    }
+
     // 设置UI状态
     public void SetVisible(bool visible)
     {
