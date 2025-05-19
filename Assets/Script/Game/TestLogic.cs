@@ -22,6 +22,7 @@ public class TestLogic : UIBaseView
         }
         
         text.text = "test";
+        UIComponent.InstantiateCollection(UIComponent.Get<UICompoentCollection>("TestUccMap"),this.transform,"TestUccMapClone");
         Debug.Log("TestLogic OnInit 被调用");
     }
     

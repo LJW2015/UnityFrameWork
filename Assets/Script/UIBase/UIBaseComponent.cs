@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -86,9 +87,26 @@ public class UIBaseComponent : MonoBehaviour
         return _uiCompoentCollection.Check(component,path);
     }
 
-    // 设置UI状态
-    public void SetVisible(bool visible)
-    {
-        gameObject.SetActive(visible);
+    public UICompoentCollection InstantiateCollection(UICompoentCollection target, Transform parent = null, string name = null){
+        if(parent == null){
+            parent = gameObject.transform;
+        }
+        if(name == null){
+            name = target.name;
+        }
+        GameObject instance = Instantiate(target.gameObject,parent);
+        instance.name = name;
+        instance.transform.SetParent(parent);
+        instance.transform.localPosition = Vector3.zero;
+        UICompoentCollection collection = instance.GetComponent<UICompoentCollection>();
+        if(collection != null){
+            collection.Initialize();
+        }
+        if(parent.GetComponent<UICompoentCollection>() != null){
+            parent.GetComponent<UICompoentCollection>().Add(instance.GetComponent<MonoBehaviour>());
+        }
+        RegistComponentEvents(collection);
+        return collection;
     }
 }
+    

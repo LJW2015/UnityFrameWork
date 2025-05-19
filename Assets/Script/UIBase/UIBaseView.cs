@@ -47,13 +47,12 @@ public class UIBaseView : MonoBehaviour, IUIView
             OnInit();
         }
         _isVisible = true;
-        _uiComponent?.SetVisible(true);
+        
     }
 
     public virtual void OnHide()
     {
         _isVisible = false;
-        _uiComponent?.SetVisible(false);
     }
 
     public virtual void OnClose()
