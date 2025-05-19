@@ -1,9 +1,21 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+
+public static class ResourceRequestExtension
+{
+    public static TaskAwaiter GetAwaiter(this ResourceRequest request)
+    {
+        var tcs = new TaskCompletionSource<object>();
+        request.completed += operation => tcs.SetResult(null);
+        return ((Task)tcs.Task).GetAwaiter();
+    }
+}
 
 public enum UILayer
 {
@@ -106,6 +118,45 @@ public class UIBaseComponent : MonoBehaviour
         instance.name = name;
         instance.transform.SetParent(parent);
         instance.transform.localPosition = Vector3.zero;
+        UICompoentCollection collection = instance.GetComponent<UICompoentCollection>();
+        if(collection != null){
+            collection.Initialize();
+        }
+        if(parent.GetComponent<UICompoentCollection>() != null){
+            parent.GetComponent<UICompoentCollection>().Add(instance.GetComponent<MonoBehaviour>());
+        }
+        RegistComponentEvents(collection);
+        return collection;
+    }
+
+    /// <summary>
+    /// 从Resources中异步实例化UICompoentCollection
+    /// </summary>
+    /// <param name="path">路径</param>
+    /// <param name="parent">父级Transform</param>
+    /// <param name="name">实例化名称</param>
+    /// <returns>实例化后的UICompoentCollection</returns>
+    public async Task<UICompoentCollection> InstantiateCollectionAsync(string path, Transform parent = null, string name = null){
+        if(parent == null){
+            parent = gameObject.transform;
+        }
+        if(name == null){
+            name = path;
+        }
+        
+        ResourceRequest request = Resources.LoadAsync<GameObject>(path);
+        await request;
+        
+        if(request.asset == null){
+            Debug.LogError($"Failed to load prefab from path: {path}");
+            return null;
+        }
+        
+        GameObject instance = Instantiate(request.asset as GameObject, parent);
+        instance.name = name;
+        instance.transform.SetParent(parent);
+        instance.transform.localPosition = Vector3.zero;
+        
         UICompoentCollection collection = instance.GetComponent<UICompoentCollection>();
         if(collection != null){
             collection.Initialize();

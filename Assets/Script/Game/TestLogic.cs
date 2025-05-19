@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 
 public class TestLogic : UIBaseView
 {
-    public override void OnInit()
+    public override async void OnInit()
     {
         base.OnInit();
         if (UIComponent == null) {
@@ -26,6 +26,9 @@ public class TestLogic : UIBaseView
         UIComponent.UpdateInstanceCollectionArray(UIComponent.Get<UICompoentCollection>("TestUccClone"),UIComponent.Get<UICompoentCollection>("TestUccUpdate"),5, (collection,index) => {
             collection.name = "TestUccUpdateClone" + index;
         });
+
+        UICompoentCollection testUcc = await UIComponent.InstantiateCollectionAsync("Prefab/Template/TestTemplate",this.transform);
+        testUcc.gameObject.SetActive(false);
         Debug.Log("TestLogic OnInit 被调用");
     }
     
