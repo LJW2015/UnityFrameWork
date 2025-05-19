@@ -4,10 +4,11 @@ using GameFramework;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
+using System.Collections;
 
 public class TestLogic : UIBaseView
 {
-    public override async void OnInit()
+    public override void OnInit()
     {
         base.OnInit();
         if (UIComponent == null) {
@@ -27,9 +28,22 @@ public class TestLogic : UIBaseView
             collection.name = "TestUccUpdateClone" + index;
         });
 
-        UICompoentCollection testUcc = await UIComponent.InstantiateCollectionAsync("Prefab/Template/TestTemplate",this.transform);
-        testUcc.gameObject.SetActive(false);
+        StartCoroutine(LoadTemplateAsync());
         Debug.Log("TestLogic OnInit 被调用");
+    }
+
+    private IEnumerator LoadTemplateAsync()
+    {
+        var task = UIComponent.InstantiateCollectionAsync("Prefab/Template/TestTemplate", this.transform);
+        while (!task.IsCompleted)
+        {
+            yield return null;
+        }
+
+        if (task.Result != null)
+        {
+            task.Result.gameObject.SetActive(false);
+        }
     }
     
     public override void OnShow()

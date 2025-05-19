@@ -162,26 +162,6 @@ namespace GameFramework
         }
 
         /// <summary>
-        /// 异步加载UI预制体
-        /// </summary>
-        /// <param name="prefabPath">预制体路径</param>
-        /// <returns>预制体对象</returns>
-        private static async Task<GameObject> LoadUIPrefabAsync(string prefabPath)
-        {
-            // 创建异步加载请求
-            Debug.Log("Prefab/" + prefabPath);
-            ResourceRequest request = Resources.LoadAsync<GameObject>("Prefab/" + prefabPath);
-            
-            // 等待加载完成
-            while (!request.isDone)
-            {
-                await Task.Yield();
-            }
-
-            return request.asset as GameObject;
-        }
-
-        /// <summary>
         /// 关闭UI界面
         /// </summary>
         /// <param name="uiId">UI唯一标识</param>

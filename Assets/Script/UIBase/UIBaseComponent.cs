@@ -3,9 +3,25 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using GameFramework;
+
+public static class TaskExtension
+{
+    public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        using (cancellationToken.Register(s => ((TaskCompletionSource<bool>)s).TrySetResult(true), tcs))
+        {
+            if (task != await Task.WhenAny(task, tcs.Task))
+                throw new OperationCanceledException(cancellationToken);
+        }
+        return await task;
+    }
+}
 
 public static class ResourceRequestExtension
 {
@@ -37,9 +53,11 @@ public class UIBaseComponent : MonoBehaviour
 
     private UICompoentCollection _uiCompoentCollection;
     private UIBaseView _uiBaseView;
+    private CancellationTokenSource _cancellationTokenSource;
 
     public void Init(UIBaseView uiBaseView){
         _uiBaseView = uiBaseView;
+        _cancellationTokenSource = new CancellationTokenSource();
         _uiCompoentCollection = GetComponent<UICompoentCollection>();
         if (_uiCompoentCollection != null) {
             _uiCompoentCollection.Initialize();
@@ -143,29 +161,33 @@ public class UIBaseComponent : MonoBehaviour
         if(name == null){
             name = path;
         }
-        
-        ResourceRequest request = Resources.LoadAsync<GameObject>(path);
-        await request;
-        
-        if(request.asset == null){
-            Debug.LogError($"Failed to load prefab from path: {path}");
+
+        try {
+            GameObject instance = await AssetManager.InstantiatePrefabAsync(path, parent, name)
+                .WithCancellation(_cancellationTokenSource.Token);
+                
+            if (instance == null || !this || !parent) {
+                return null;
+            }
+
+            UICompoentCollection collection = instance.GetComponent<UICompoentCollection>();
+            if(collection != null){
+                collection.Initialize();
+            }
+            if(parent.GetComponent<UICompoentCollection>() != null){
+                parent.GetComponent<UICompoentCollection>().Add(instance.GetComponent<MonoBehaviour>());
+            }
+            RegistComponentEvents(collection);
+            return collection;
+        }
+        catch (OperationCanceledException) {
+            Debug.Log("界面关闭，取消加载");
             return null;
         }
-        
-        GameObject instance = Instantiate(request.asset as GameObject, parent);
-        instance.name = name;
-        instance.transform.SetParent(parent);
-        instance.transform.localPosition = Vector3.zero;
-        
-        UICompoentCollection collection = instance.GetComponent<UICompoentCollection>();
-        if(collection != null){
-            collection.Initialize();
+        catch (Exception e) {
+            Debug.LogError($"加载预制体失败: {e.Message}");
+            return null;
         }
-        if(parent.GetComponent<UICompoentCollection>() != null){
-            parent.GetComponent<UICompoentCollection>().Add(instance.GetComponent<MonoBehaviour>());
-        }
-        RegistComponentEvents(collection);
-        return collection;
     }
 
     /// <summary>
@@ -189,6 +211,12 @@ public class UIBaseComponent : MonoBehaviour
                 collection.gameObject.SetActive(false);
             }
         }
+    }
+
+    public void OnDestroy() {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = null;
     }
 }
     

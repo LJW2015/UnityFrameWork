@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using GameFramework;
 
 public static class UIViewFactory 
 {
@@ -26,22 +27,6 @@ public static class UIViewFactory
             _uiViewMap.Add(viewId, viewType);
         }
     }
-
-    /// <summary>
-    /// 异步加载预制体
-    /// </summary>
-    /// <param name="prefabPath">预制体名</param>
-    /// <returns>预制体对象</returns>
-    private static async Task<GameObject> LoadPrefabAsync(string prefabPath)
-    {
-        ResourceRequest request = Resources.LoadAsync<GameObject>(prefabPath);
-        while (!request.isDone)
-        {
-            await Task.Yield();
-        }
-        return request.asset as GameObject;
-    }
-
     /// <summary>
     /// 创建UI实例并挂载对应的逻辑脚本
     /// </summary>
@@ -56,7 +41,7 @@ public static class UIViewFactory
         }
 
         // 异步加载预制体
-        GameObject prefab = await LoadPrefabAsync(prefabPath);
+        GameObject prefab = await AssetManager.LoadAssetAsync<GameObject>(prefabPath);
         if (prefab == null)
         {
             Debug.LogError($"加载预制体失败: {prefabPath}");
