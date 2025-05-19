@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -87,6 +88,13 @@ public class UIBaseComponent : MonoBehaviour
         return _uiCompoentCollection.Check(component,path);
     }
 
+    /// <summary>
+    /// 实例化UICompoentCollection
+    /// </summary>
+    /// <param name="target">目标UICompoentCollection</param>
+    /// <param name="parent">父级Transform</param>
+    /// <param name="name">实例化名称</param>
+    /// <returns>实例化后的UICompoentCollection</returns>
     public UICompoentCollection InstantiateCollection(UICompoentCollection target, Transform parent = null, string name = null){
         if(parent == null){
             parent = gameObject.transform;
@@ -107,6 +115,29 @@ public class UIBaseComponent : MonoBehaviour
         }
         RegistComponentEvents(collection);
         return collection;
+    }
+
+    /// <summary>
+    /// 更新实例化UICompoentCollection数组
+    /// </summary>
+    /// <param name="target">目标UICompoentCollection</param>
+    /// <param name="parent">父级UICompoentCollection</param>
+    /// <param name="count">数量</param>
+    /// <param name="action">回调</param>
+    public void UpdateInstanceCollectionArray(UICompoentCollection target, UICompoentCollection parent, int count, Action<UICompoentCollection,int> action = null){
+        int maxCount = Math.Max(parent.Count,count);
+        for(int i = 0; i < maxCount; i++){
+            UICompoentCollection collection = parent.Get<UICompoentCollection>(i);
+            if(collection == null){
+                collection = InstantiateCollection(target,parent.transform);
+            }
+            if(i < count){
+                collection.gameObject.SetActive(true);
+                action?.Invoke(collection,i);
+            }else{
+                collection.gameObject.SetActive(false);
+            }
+        }
     }
 }
     

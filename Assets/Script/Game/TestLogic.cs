@@ -22,7 +22,10 @@ public class TestLogic : UIBaseView
         }
         
         text.text = "test";
-        UIComponent.InstantiateCollection(UIComponent.Get<UICompoentCollection>("TestUccMap"),this.transform,"TestUccMapClone");
+
+        UIComponent.UpdateInstanceCollectionArray(UIComponent.Get<UICompoentCollection>("TestUccClone"),UIComponent.Get<UICompoentCollection>("TestUccUpdate"),5, (collection,index) => {
+            collection.name = "TestUccUpdateClone" + index;
+        });
         Debug.Log("TestLogic OnInit 被调用");
     }
     
